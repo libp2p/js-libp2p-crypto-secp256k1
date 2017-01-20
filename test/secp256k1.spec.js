@@ -7,6 +7,8 @@ const Buffer = require('safe-buffer').Buffer
 const secp256k1 = require('../src')
 const crypto = require('../src/crypto')
 const randomBytes = require('../src/crypto/random')
+const protobuf = require('protocol-buffers')
+const pbm = protobuf(require('../src/crypto.proto'))
 
 describe('secp256k1 keys', () => {
   let key
@@ -324,5 +326,49 @@ describe('randomBytes', () => {
     }).to.throw()
 
     done()
+  })
+})
+
+describe('go interop', () => {
+  const fixtures = require('./fixtures/go-interop')
+
+  it('loads a private key marshaled by go-libp2p-crypto', (done) => {
+    // we need to first extract the key data from the protobuf, which is
+    // normally handled by js-libp2p-crypto
+    const decoded = pbm.PrivateKey.decode(fixtures.privateKey)
+    expect(decoded.Type).to.be.eql(pbm.KeyType.Secp256k1)
+
+    secp256k1.unmarshalSecp256k1PrivateKey(decoded.Data, (err, key) => {
+      if (err) return done(err)
+
+      expect(key).to.be.an.instanceof(secp256k1.Secp256k1PrivateKey)
+      expect(key.bytes).to.be.eql(fixtures.privateKey)
+      done()
+    })
+  })
+
+  it('loads a public key marshaled by go-libp2p-crypto', (done) => {
+    const decoded = pbm.PublicKey.decode(fixtures.publicKey)
+    expect(decoded.Type).to.be.eql(pbm.KeyType.Secp256k1)
+
+    const key = secp256k1.unmarshalSecp256k1PublicKey(decoded.Data)
+    expect(key).to.be.an.instanceof(secp256k1.Secp256k1PublicKey)
+    expect(key.bytes).to.be.eql(fixtures.publicKey)
+    done()
+  })
+
+  it('generates the same signature as go-libp2p-crypto', (done) => {
+    const decoded = pbm.PrivateKey.decode(fixtures.privateKey)
+    expect(decoded.Type).to.be.eql(pbm.KeyType.Secp256k1)
+
+    secp256k1.unmarshalSecp256k1PrivateKey(decoded.Data, (err, key) => {
+      if (err) return done(err)
+
+      key.sign(fixtures.message, (err, sig) => {
+        if (err) return done(err)
+        expect(sig).to.be.eql(fixtures.signature)
+        done()
+      })
+    })
   })
 })
