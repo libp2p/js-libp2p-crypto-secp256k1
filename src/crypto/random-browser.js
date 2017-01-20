@@ -17,6 +17,10 @@ function getWebCrypto () {
 
 const crypto = getWebCrypto()
 
-module.exports = function getRandomValues (arr) {
+module.exports = function randomBytes (length) {
+  if (!Number.isInteger(length) || length < 0) {
+    throw new Error('randomBytes requires a positive integer argument')
+  }
+  const arr = new Uint8Array(length)
   return Buffer.from(crypto.getRandomValues(arr))
 }

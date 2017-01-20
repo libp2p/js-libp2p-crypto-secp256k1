@@ -3,8 +3,7 @@
 const secp256k1 = require('secp256k1')
 const multihashing = require('multihashing-async')
 const setImmediate = require('async/setImmediate')
-const Buffer = require('safe-buffer').Buffer
-const getRandomValues = require('./random')
+const randomBytes = require('./random')
 
 const HASH_ALGORITHM = 'sha2-256'
 
@@ -15,9 +14,9 @@ exports.generateKey = function (callback) {
     callback(err, res)
   })
 
-  const privateKey = new Buffer(32)
+  let privateKey
   do {
-    getRandomValues(privateKey)
+    privateKey = randomBytes(32)
   } while (!secp256k1.privateKeyVerify(privateKey))
 
   done(null, privateKey)
