@@ -190,6 +190,52 @@ describe('secp256k1 keys', () => {
   })
 })
 
+describe('key generation error', () => {
+  let generateKey
+
+  before((done) => {
+    generateKey = crypto.generateKey
+    crypto.generateKey = (callback) => { callback(new Error('Error generating key')) }
+    done()
+  })
+
+  after((done) => {
+    crypto.generateKey = generateKey
+    done()
+  })
+
+  it('returns an error if key generation fails', (done) => {
+    secp256k1.generateKeyPair((err, key) => {
+      expect(err).to.exist
+      expect(key).to.not.exist
+      done()
+    })
+  })
+})
+
+describe('handles generation of invalid key', () => {
+  let generateKey
+
+  before((done) => {
+    generateKey = crypto.generateKey
+    crypto.generateKey = (callback) => { callback(null, Buffer.from('not a real key')) }
+    done()
+  })
+
+  after((done) => {
+    crypto.generateKey = generateKey
+    done()
+  })
+
+  it('returns an error if key generator returns an invalid key', (done) => {
+    secp256k1.generateKeyPair((err, key) => {
+      expect(err).to.exist
+      expect(key).to.not.exist
+      done()
+    })
+  })
+})
+
 describe('crypto functions', () => {
   let privKey, pubKey
 
