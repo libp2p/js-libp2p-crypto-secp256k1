@@ -1,4 +1,4 @@
-sudo: required
+sudo: false
 language: node_js
 
 matrix:
@@ -15,7 +15,6 @@ matrix:
 # Make sure we have new NPM.
 before_install:
   - npm install -g npm
-  - sudo cp -a /dev/urandom /dev/random
 
 script:
   - npm run lint
