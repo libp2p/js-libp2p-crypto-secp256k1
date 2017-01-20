@@ -5,12 +5,13 @@ const expect = require('chai').expect
 const Buffer = require('safe-buffer').Buffer
 
 const secp256k1 = require('../src')
+const crypto = require('../src/crypto')
 const getRandomValues = require('../src/crypto/random')
 
-describe('secp256k1', () => {
+describe('secp256k1 keys', () => {
   let key
   before((done) => {
-    secp256k1.generateKeyPair(256, (err, _key) => {
+    secp256k1.generateKeyPair((err, _key) => {
       if (err) return done(err)
       key = _key
       done()
@@ -23,15 +24,39 @@ describe('secp256k1', () => {
     ).to.be.an.instanceof(
       secp256k1.Secp256k1PrivateKey
     )
+    expect(
+      key.public
+    ).to.be.an.instanceof(
+      secp256k1.Secp256k1PublicKey
+    )
 
     key.hash((err, digest) => {
-      if (err) {
-        return done(err)
-      }
+      if (err) return done(err)
 
       expect(digest).to.have.length(34)
+
+      key.public.hash((err, digest) => {
+        if (err) return done(err)
+
+        expect(digest).to.have.length(34)
+        done()
+      })
+    })
+  })
+
+  it('optionally accepts a `bits` argument when generating a key', (done) => {
+    secp256k1.generateKeyPair(256, (err, _key) => {
+      expect(err).to.not.exist
+      expect(_key).to.be.an.instanceof(secp256k1.Secp256k1PrivateKey)
       done()
     })
+  })
+
+  it('requires a callback to generate a key', (done) => {
+    expect(() =>
+      secp256k1.generateKeyPair()
+    ).to.throw()
+    done()
   })
 
   it('signs', (done) => {
@@ -161,5 +186,115 @@ describe('secp256k1', () => {
         done()
       })
     })
+  })
+})
+
+describe('crypto functions', () => {
+  let privKey, pubKey
+
+  before((done) => {
+    crypto.generateKey((err, _key) => {
+      if (err) return done(err)
+      privKey = _key
+      pubKey = crypto.computePublicKey(privKey)
+      done()
+    })
+  })
+
+  it('generates valid keys', (done) => {
+    expect(() => {
+      crypto.validatePrivateKey(privKey)
+      crypto.validatePublicKey(pubKey)
+    }).to.not.throw()
+    done()
+  })
+
+  it('does not validate an invalid key', (done) => {
+    expect(() => {
+      crypto.validatePublicKey(Buffer.from('42'))
+    }).to.throw()
+
+    expect(() => {
+      crypto.validatePrivateKey(Buffer.from('42'))
+    }).to.throw()
+    done()
+  })
+
+  it('validates a correct signature', (done) => {
+    crypto.hashAndSign(privKey, Buffer.from('hello'), (err, sig) => {
+      if (err) return done(err)
+      crypto.hashAndVerify(pubKey, sig, Buffer.from('hello'), (err, valid) => {
+        if (err) return done(err)
+        expect(valid).to.be.eql(true)
+        done()
+      })
+    })
+  })
+
+  it('errors if given a null buffer to sign', (done) => {
+    crypto.hashAndSign(privKey, null, (err, sig) => {
+      expect(err).to.exist
+      expect(sig).to.not.exist
+      done()
+    })
+  })
+
+  it('errors when signing with an invalid key', (done) => {
+    crypto.hashAndSign(Buffer.from('42'), Buffer.from('Hello'), (err, sig) => {
+      expect(err).to.exist
+      expect(sig).to.not.exist
+      done()
+    })
+  })
+
+  it('errors if given a null buffer to validate', (done) => {
+    crypto.hashAndSign(privKey, Buffer.from('hello'), (err, sig) => {
+      if (err) return done(err)
+
+      crypto.hashAndVerify(privKey, sig, null, (err, valid) => {
+        expect(err).to.exist
+        expect(valid).to.not.exist
+        done()
+      })
+    })
+  })
+
+  it('errors when validating a message with an invalid signature', (done) => {
+    crypto.hashAndVerify(pubKey, Buffer.from('invalid-sig'), Buffer.from('hello'), (err, valid) => {
+      expect(err).to.exist
+      expect(valid).to.not.exist
+      done()
+    })
+  })
+
+  it('errors when signing with an invalid key', (done) => {
+    crypto.hashAndSign(Buffer.from('42'), Buffer.from('Hello'), (err, sig) => {
+      expect(err).to.exist
+      expect(sig).to.not.exist
+      done()
+    })
+  })
+
+  it('throws when compressing an invalid public key', (done) => {
+    expect(() => {
+      crypto.compressPublicKey(Buffer.from('42'))
+    }).to.throw()
+    done()
+  })
+
+  it('throws when decompressing an invalid public key', (done) => {
+    expect(() => {
+      crypto.decompressPublicKey(Buffer.from('42'))
+    }).to.throw()
+    done()
+  })
+
+  it('compresses/decompresses a valid public key', (done) => {
+    const decompressed = crypto.decompressPublicKey(pubKey)
+    expect(decompressed).to.exist
+    expect(decompressed.length).to.be.eql(65)
+    const recompressed = crypto.compressPublicKey(decompressed)
+    expect(recompressed).to.be.eql(pubKey)
+    done()
   })
 })

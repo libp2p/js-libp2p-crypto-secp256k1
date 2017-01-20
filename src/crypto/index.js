@@ -65,11 +65,7 @@ exports.compressPublicKey = function compressPublicKey (key) {
 }
 
 exports.decompressPublicKey = function decompressPublicKey (key) {
-  const decompressed = secp256k1.publicKeyConvert(key, false)
-  if (!secp256k1.publicKeyVerify(decompressed)) {
-    throw new Error('Invalid public key')
-  }
-  return decompressed
+  return secp256k1.publicKeyConvert(key, false)
 }
 
 exports.validatePrivateKey = function validatePrivateKey (key) {
