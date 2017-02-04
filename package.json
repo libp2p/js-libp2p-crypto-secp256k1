@@ -4,8 +4,7 @@
   "description": "Support for secp256k1 keys in libp2p-crypto",
   "main": "src/index.js",
   "browser": {
-    "secp256k1": "secp256k1/js",
-    "./src/crypto/random.js": "./src/crypto/random-browser.js"
+    "secp256k1": "secp256k1/js"
   },
   "scripts": {
     "lint": "aegir-lint",
@@ -28,12 +27,12 @@
   "author": "Yusef Napora <yusef@napora.org>",
   "license": "MIT",
   "dependencies": {
+    "libp2p-crypto": "^0.7.7",
     "multihashing-async": "^0.3.0",
     "nodeify": "^1.0.0",
     "protocol-buffers": "^3.2.1",
     "safe-buffer": "^5.0.1",
-    "secp256k1": "^3.2.5",
-    "webcrypto-shim": "github:dignifiedquire/webcrypto-shim#master"
+    "secp256k1": "^3.2.5"
   },
   "devDependencies": {
     "aegir": "^9.2.1",

@@ -6,9 +6,9 @@ const Buffer = require('safe-buffer').Buffer
 
 const secp256k1 = require('../src')
 const crypto = require('../src/crypto')
-const randomBytes = require('../src/crypto/random')
 const protobuf = require('protocol-buffers')
 const pbm = protobuf(require('../src/crypto.proto'))
+const randomBytes = require('libp2p-crypto').randomBytes
 
 describe('secp256k1 keys', () => {
   let key
@@ -342,35 +342,6 @@ describe('crypto functions', () => {
     expect(decompressed.length).to.be.eql(65)
     const recompressed = crypto.compressPublicKey(decompressed)
     expect(recompressed).to.be.eql(pubKey)
-    done()
-  })
-})
-
-describe('randomBytes', () => {
-  it('generates a buffer of a given length', (done) => {
-    const buf = randomBytes(42)
-    expect(buf).to.be.an.instanceof(Buffer)
-    expect(buf.length).to.be.eql(42)
-    done()
-  })
-
-  it('throws if not given a positive integer argument', (done) => {
-    expect(() => {
-      randomBytes()
-    }).to.throw()
-
-    expect(() => {
-      randomBytes(-1)
-    }).to.throw()
-
-    expect(() => {
-      randomBytes('foo')
-    }).to.throw()
-
-    expect(() => {
-      randomBytes(12.5)
-    }).to.throw()
-
     done()
   })
 })

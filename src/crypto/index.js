@@ -3,7 +3,7 @@
 const secp256k1 = require('secp256k1')
 const multihashing = require('multihashing-async')
 const setImmediate = require('async/setImmediate')
-const randomBytes = require('./random')
+const randomBytes = require('libp2p-crypto').randomBytes
 
 const HASH_ALGORITHM = 'sha2-256'
 
