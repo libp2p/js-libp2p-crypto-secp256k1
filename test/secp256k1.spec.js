@@ -6,9 +6,9 @@ const Buffer = require('safe-buffer').Buffer
 
 const secp256k1 = require('../src')
 const crypto = require('../src/crypto')
-const protobuf = require('protocol-buffers')
-const pbm = protobuf(require('../src/crypto.proto'))
-const randomBytes = require('libp2p-crypto').randomBytes
+const libp2pCrypto = require('libp2p-crypto')
+const pbm = libp2pCrypto.protobuf
+const randomBytes = libp2pCrypto.randomBytes
 
 describe('secp256k1 keys', () => {
   let key

@@ -1,10 +1,8 @@
 'use strict'
 
 const multihashing = require('multihashing-async')
-const protobuf = require('protocol-buffers')
-
 const crypto = require('./crypto')
-const pbm = protobuf(require('./crypto.proto.js'))
+const pbm = require('libp2p-crypto').protobuf
 
 class Secp256k1PublicKey {
   constructor (key) {
