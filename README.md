@@ -10,10 +10,10 @@
 
 > Support for secp256k1 keys in js-libp2p-crypto
 
-This repo contains a [js-libp2p-crypto](https://github.com/libp2p/js-libp2p-crypto)-compatible 
-implementation of cryptographic signature generation and verification using the 
-[secp256k1 elliptic curve](https://en.bitcoin.it/wiki/Secp256k1) popularized by Bitcoin and other 
-crypto currencies.  
+This repo contains a [js-libp2p-crypto](https://github.com/libp2p/js-libp2p-crypto)-compatible
+implementation of cryptographic signature generation and verification using the
+[secp256k1 elliptic curve](https://en.bitcoin.it/wiki/Secp256k1) popularized by Bitcoin and other
+crypto currencies.
 
 ## Table of Contents
 
@@ -40,16 +40,24 @@ npm install --save libp2p-crypto-secp256k1
 
 ## Usage
 
-This module is designed to work with [js-libp2p-crypto](https://github.com/libp2p/js-libp2p-crypto).  
-Installing `libp2p-crypto-secp256k1` will automatically add support for the `'secp256k1'` key type, which
-can be used as an argument to the [libp2p-crypto API functions](https://github.com/libp2p/js-libp2p-crypto#api)
-`generateKeyPair`, `unmarshalPublicKey`, and `marshalPrivateKey`.  The keys returned from those functions will be
-instances of the `Secp256k1PublicKey` or `Secp256k1PrivateKey` classes provided by this module.
+This module is designed to work with [js-libp2p-crypto](https://github.com/libp2p/js-libp2p-crypto).
+To install `libp2p-crypto-secp256k1` into libp2p-crypto you will need to
+
+```js
+const crypto = require('libp2p-crypto')
+crypto.addKeyType('secp2561k', requrie('libp2p-crypto-secp256k1'))
+
+// now available as
+crypto.keys.secp256k1
+```
+
+Now all methods `generateKeyPair`, `unmarshalPublicKey`, and `marshalPrivateKey` understand `secp256k1`.
 
 ### Example
 
 ```js
 const crypto = require('libp2p-crypto')
+crypto.addKeyType('secp2561k', requrie('libp2p-crypto-secp256k1'))
 
 const msg = Buffer.from('Hello World')
 
@@ -73,18 +81,18 @@ For usage within libp2p-crypto, see the [libp2p-crypto API documentation](https:
 - `bits: Number` - Optional, included for compatibility with js-libp2p-crypto. Ignored if present; private keys will always be 256 bits.
 - `callback: Function`
 
-### `unmarshalSecp256k1PublicKey(bytes)`
+### `unmarshalPublicKey(bytes)`
 - `bytes: Buffer`
 
 Converts a serialized secp256k1 public key into an instance of `Secp256k1PublicKey` and returns it
 
-### `unmarshalSecp256k1PrivateKey(bytes, callback)`
+### `unmarshalPrivateKey(bytes, callback)`
 - `bytes: Buffer`
 - `callback: Function`
 
 Converts a serialized secp256k1 private key into an instance of `Secp256k1PrivateKey`, passing it to `callback` on success
 
-### `Secp256k1PublicKey`
+### `PublicKey`
 
 #### `.verify(data, sig, callback)`
 - `data: Buffer`
@@ -93,7 +101,7 @@ Converts a serialized secp256k1 private key into an instance of `Secp256k1Privat
 
 Calculates the SHA-256 hash of `data`, and verifies the DER-encoded signature in `sig`, passing the result to `callback`
 
-### `Secp256k1PrivateKey`
+### `PrivateKey`
 
 #### `.public`
 

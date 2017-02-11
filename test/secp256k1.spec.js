@@ -3,18 +3,23 @@
 
 const expect = require('chai').expect
 const Buffer = require('safe-buffer').Buffer
-
-const secp256k1 = require('../src')
-const crypto = require('../src/crypto')
 const libp2pCrypto = require('libp2p-crypto')
+
 const pbm = libp2pCrypto.protobuf
 const randomBytes = libp2pCrypto.randomBytes
 
+libp2pCrypto.addKeyType('secp256k1', require('../src'))
+const secp256k1 = libp2pCrypto.keys.secp256k1
+const crypto = require('../src/crypto')(libp2pCrypto)
+
 describe('secp256k1 keys', () => {
   let key
+
   before((done) => {
     secp256k1.generateKeyPair((err, _key) => {
-      if (err) return done(err)
+      if (err) {
+        return done(err)
+      }
       key = _key
       done()
     })
@@ -24,12 +29,12 @@ describe('secp256k1 keys', () => {
     expect(
       key
     ).to.be.an.instanceof(
-      secp256k1.Secp256k1PrivateKey
+      secp256k1.PrivateKey
     )
     expect(
       key.public
     ).to.be.an.instanceof(
-      secp256k1.Secp256k1PublicKey
+      secp256k1.PublicKey
     )
 
     key.hash((err, digest) => {
@@ -49,7 +54,7 @@ describe('secp256k1 keys', () => {
   it('optionally accepts a `bits` argument when generating a key', (done) => {
     secp256k1.generateKeyPair(256, (err, _key) => {
       expect(err).to.not.exist
-      expect(_key).to.be.an.instanceof(secp256k1.Secp256k1PrivateKey)
+      expect(_key).to.be.an.instanceof(secp256k1.PrivateKey)
       done()
     })
   })
@@ -82,7 +87,7 @@ describe('secp256k1 keys', () => {
 
   it('encoding', (done) => {
     const keyMarshal = key.marshal()
-    secp256k1.unmarshalSecp256k1PrivateKey(keyMarshal, (err, key2) => {
+    secp256k1.unmarshalPrivateKey(keyMarshal, (err, key2) => {
       if (err) {
         return done(err)
       }
@@ -96,7 +101,7 @@ describe('secp256k1 keys', () => {
 
       const pk = key.public
       const pkMarshal = pk.marshal()
-      const pk2 = secp256k1.unmarshalSecp256k1PublicKey(pkMarshal)
+      const pk2 = secp256k1.unmarshalPublicKey(pkMarshal)
       const pkMarshal2 = pk2.marshal()
 
       expect(
@@ -186,52 +191,6 @@ describe('secp256k1 keys', () => {
         expect(valid).to.be.eql(false)
         done()
       })
-    })
-  })
-})
-
-describe('key generation error', () => {
-  let generateKey
-
-  before((done) => {
-    generateKey = crypto.generateKey
-    crypto.generateKey = (callback) => { callback(new Error('Error generating key')) }
-    done()
-  })
-
-  after((done) => {
-    crypto.generateKey = generateKey
-    done()
-  })
-
-  it('returns an error if key generation fails', (done) => {
-    secp256k1.generateKeyPair((err, key) => {
-      expect(err).to.exist
-      expect(key).to.not.exist
-      done()
-    })
-  })
-})
-
-describe('handles generation of invalid key', () => {
-  let generateKey
-
-  before((done) => {
-    generateKey = crypto.generateKey
-    crypto.generateKey = (callback) => { callback(null, Buffer.from('not a real key')) }
-    done()
-  })
-
-  after((done) => {
-    crypto.generateKey = generateKey
-    done()
-  })
-
-  it('returns an error if key generator returns an invalid key', (done) => {
-    secp256k1.generateKeyPair((err, key) => {
-      expect(err).to.exist
-      expect(key).to.not.exist
-      done()
     })
   })
 })
@@ -355,10 +314,10 @@ describe('go interop', () => {
     const decoded = pbm.PrivateKey.decode(fixtures.privateKey)
     expect(decoded.Type).to.be.eql(pbm.KeyType.Secp256k1)
 
-    secp256k1.unmarshalSecp256k1PrivateKey(decoded.Data, (err, key) => {
+    secp256k1.unmarshalPrivateKey(decoded.Data, (err, key) => {
       if (err) return done(err)
 
-      expect(key).to.be.an.instanceof(secp256k1.Secp256k1PrivateKey)
+      expect(key).to.be.an.instanceof(secp256k1.PrivateKey)
       expect(key.bytes).to.be.eql(fixtures.privateKey)
       done()
     })
@@ -368,8 +327,8 @@ describe('go interop', () => {
     const decoded = pbm.PublicKey.decode(fixtures.publicKey)
     expect(decoded.Type).to.be.eql(pbm.KeyType.Secp256k1)
 
-    const key = secp256k1.unmarshalSecp256k1PublicKey(decoded.Data)
-    expect(key).to.be.an.instanceof(secp256k1.Secp256k1PublicKey)
+    const key = secp256k1.unmarshalPublicKey(decoded.Data)
+    expect(key).to.be.an.instanceof(secp256k1.PublicKey)
     expect(key.bytes).to.be.eql(fixtures.publicKey)
     done()
   })
@@ -378,7 +337,7 @@ describe('go interop', () => {
     const decoded = pbm.PrivateKey.decode(fixtures.privateKey)
     expect(decoded.Type).to.be.eql(pbm.KeyType.Secp256k1)
 
-    secp256k1.unmarshalSecp256k1PrivateKey(decoded.Data, (err, key) => {
+    secp256k1.unmarshalPrivateKey(decoded.Data, (err, key) => {
       if (err) return done(err)
 
       key.sign(fixtures.message, (err, sig) => {
