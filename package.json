@@ -38,6 +38,7 @@
     "aegir": "^11.0.2",
     "benchmark": "^2.1.4",
     "chai": "^4.1.0",
+    "dirty-chai": "^2.0.1",
     "pre-commit": "^1.2.2"
   },
   "pre-commit": [
