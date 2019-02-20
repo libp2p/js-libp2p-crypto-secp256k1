@@ -1,18 +1,17 @@
 # js-libp2p-crypto-secp256k1
 
-[![](https://img.shields.io/badge/made%20by-Protocol%20Labs-blue.svg?style=flat-square)](http://ipn.io)
-[![](https://img.shields.io/badge/project-IPFS-blue.svg?style=flat-square)](http://ipfs.io/)
-[![](https://img.shields.io/badge/freenode-%23ipfs-blue.svg?style=flat-square)](http://webchat.freenode.net/?channels=%23ipfs)
-[![standard-readme compliant](https://img.shields.io/badge/standard--readme-OK-green.svg?style=flat-square)](https://github.com/RichardLitt/standard-readme)
+[![](https://img.shields.io/badge/made%20by-Protocol%20Labs-blue.svg?style=flat-square)](http://protocol.ai)
+[![](https://img.shields.io/badge/project-libp2p-yellow.svg?style=flat-square)](http://libp2p.io/)
+[![](https://img.shields.io/badge/freenode-%23libp2p-yellow.svg?style=flat-square)](http://webchat.freenode.net/?channels=%23libp2p)
 [![js-standard-style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/feross/standard)
 ![](https://img.shields.io/badge/npm-%3E%3D3.0.0-orange.svg?style=flat-square)
 ![](https://img.shields.io/badge/Node.js-%3E%3D4.0.0-orange.svg?style=flat-square)
 
 > Support for secp256k1 keys in js-libp2p-crypto
 
-This repo contains a [js-libp2p-crypto](https://github.com/libp2p/js-libp2p-crypto)-compatible 
-implementation of cryptographic signature generation and verification using the 
-[secp256k1 elliptic curve](https://en.bitcoin.it/wiki/Secp256k1) popularized by Bitcoin and other 
+This repo contains a [js-libp2p-crypto](https://github.com/libp2p/js-libp2p-crypto)-compatible
+implementation of cryptographic signature generation and verification using the
+[secp256k1 elliptic curve](https://en.bitcoin.it/wiki/Secp256k1) popularized by Bitcoin and other
 crypto currencies.  
 
 ## Lead Captain
