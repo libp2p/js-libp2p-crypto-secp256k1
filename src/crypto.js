@@ -14,7 +14,7 @@ module.exports = (randomBytes) => {
 
     let privateKey
     do {
-      privateKey = randomBytes(32)
+      privateKey = randomBytes(privateKeyLength)
     } while (!secp256k1.privateKeyVerify(privateKey))
 
     done(null, privateKey)

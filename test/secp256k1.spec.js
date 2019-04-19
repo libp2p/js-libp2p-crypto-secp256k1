@@ -5,6 +5,7 @@ const chai = require('chai')
 const dirtyChai = require('dirty-chai')
 const expect = chai.expect
 chai.use(dirtyChai)
+chai.use(require('chai-string'))
 
 const Buffer = require('safe-buffer').Buffer
 
@@ -139,6 +140,46 @@ describe('secp256k1 keys', () => {
       })
     })
   })
+
+  /* eslint-disable */
+  describe('import and export', () => {
+    it('password protected PKCS #8', (done) => {
+      key.export('pkcs-8', 'my secret', (err, pem) => {
+        expect(err).to.not.exist()
+        expect(pem).to.startsWith('-----BEGIN ENCRYPTED PRIVATE KEY-----')
+        secp256k1.import(pem, 'my secret', (err, clone) => {
+          expect(err).to.not.exist()
+          expect(clone).to.exist()
+          expect(key.equals(clone)).to.eql(true)
+          done()
+        })
+      })
+    })
+
+    it('defaults to PKCS #8', (done) => {
+      key.export('another secret', (err, pem) => {
+        expect(err).to.not.exist()
+        expect(pem).to.startsWith('-----BEGIN ENCRYPTED PRIVATE KEY-----')
+        secp256k1.import(pem, 'another secret', (err, clone) => {
+          expect(err).to.not.exist()
+          expect(clone).to.exist()
+          expect(key.equals(clone)).to.eql(true)
+          done()
+        })
+      })
+    })
+
+    it('needs correct password', (done) => {
+      key.export('another secret', (err, pem) => {
+        expect(err).to.not.exist()
+        secp256k1.import(pem, 'not the secret', (err, clone) => {
+          expect(err).to.exist()
+          done()
+        })
+      })
+    })
+  })
+  /* eslint-enable */
 })
 
 describe('key generation error', () => {
