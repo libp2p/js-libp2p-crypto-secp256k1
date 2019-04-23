@@ -29,6 +29,7 @@
   "dependencies": {
     "async": "^2.6.2",
     "bs58": "^4.0.1",
+    "crypto-key-composer": "~0.1.0",
     "multihashing-async": "~0.6.0",
     "nodeify": "^1.0.1",
     "safe-buffer": "^5.1.2",
@@ -38,6 +39,7 @@
     "aegir": "^18.2.2",
     "benchmark": "^2.1.4",
     "chai": "^4.2.0",
+    "chai-string": "^1.5.0",
     "dirty-chai": "^2.0.1",
     "libp2p-crypto": "~0.16.1"
   },

@@ -2,6 +2,7 @@
 
 const bs58 = require('bs58')
 const multihashing = require('multihashing-async')
+const { composePrivateKey, decomposePrivateKey } = require('crypto-key-composer')
 
 module.exports = (keysProtobuf, randomBytes, crypto) => {
   crypto = crypto || require('./crypto')(randomBytes)
@@ -93,6 +94,63 @@ module.exports = (keysProtobuf, randomBytes, crypto) => {
         callback(null, bs58.encode(hash))
       })
     }
+
+    /**
+     * Exports the key into a password protected PEM format
+     *
+     * @param {string} [format] - Defaults to 'pkcs-8'.
+     * @param {string} password - The password to read the encrypted PEM
+     * @param {function(Error, KeyInfo)} callback
+     * @returns {undefined}
+     */
+    export (format, password, callback) {
+      if (typeof password === 'function') {
+        callback = password
+        password = format
+        format = 'pkcs-8'
+      }
+
+      ensure(callback)
+
+      let err = null
+      let pem = null
+
+      const decompressedPublicKey = typedArrayToUint8Array(crypto.decompressPublicKey(this.public._key))
+      try {
+        if (format === 'pkcs-8') {
+          pem = composePrivateKey({
+            format: 'pkcs8-pem',
+            keyAlgorithm: {
+              id: 'ec-public-key',
+              namedCurve: 'secp256k1'
+            },
+            keyData: {
+              d: typedArrayToUint8Array(this.marshal()),
+              // The public key concatenates the x and y values and adds an initial byte
+              x: decompressedPublicKey.slice(1, 33),
+              y: decompressedPublicKey.slice(33, 65)
+            },
+            encryptionAlgorithm: {
+              keyDerivationFunc: {
+                id: 'pbkdf2',
+                iterationCount: 10000, // The number of iterations
+                keyLength: 32, // Automatic, based on the `encryptionScheme`
+                prf: 'hmac-with-sha512' // The pseudo-random function
+              },
+              encryptionScheme: {
+                id: 'aes256-cbc'
+              }
+            }
+          }, { password })
+        } else {
+          err = new Error(`Unknown export format '${format}'`)
+        }
+      } catch (_err) {
+        err = _err
+      }
+
+      callback(err, pem)
+    }
   }
 
   function unmarshalSecp256k1PrivateKey (bytes, callback) {
@@ -122,10 +180,24 @@ module.exports = (keysProtobuf, randomBytes, crypto) => {
     })
   }
 
+  function importPEM (pem, password, callback) {
+    let privkey
+    try {
+      const decomposedPrivateKey = decomposePrivateKey(pem, { password })
+      privkey = new Secp256k1PrivateKey(Buffer.from(decomposedPrivateKey.keyData.d))
+    } catch (err) { return callback(err) }
+
+    callback(null, privkey)
+  }
+
   function ensure (callback) {
     if (typeof callback !== 'function') {
       throw new Error('callback is required')
     }
+  }
+
+  function typedArrayToUint8Array (typedArray) {
+    return new Uint8Array(typedArray.buffer.slice(typedArray.byteOffset, typedArray.byteOffset + typedArray.byteLength))
   }
 
   return {
@@ -133,6 +205,7 @@ module.exports = (keysProtobuf, randomBytes, crypto) => {
     Secp256k1PrivateKey,
     unmarshalSecp256k1PrivateKey,
     unmarshalSecp256k1PublicKey,
-    generateKeyPair
+    generateKeyPair,
+    import: importPEM
   }
 }
