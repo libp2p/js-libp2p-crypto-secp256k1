@@ -57,13 +57,10 @@ describe('secp256k1 keys', () => {
     expect(pkMarshal).to.eql(pkMarshal2)
   })
 
-  it('key id', (done) => {
-    key.id((err, id) => {
-      expect(err).to.not.exist()
-      expect(id).to.exist()
-      expect(id).to.be.a('string')
-      done()
-    })
+  it('key id', async () => {
+    const id = await key.id()
+    expect(id).to.exist()
+    expect(id).to.be.a('string')
   })
 
   describe('key equals', () => {
@@ -103,7 +100,7 @@ describe('key generation error', () => {
 
   before(() => {
     generateKey = crypto.generateKey
-    crypto.generateKey = async () => { throw new Error('Error generating key') }
+    crypto.generateKey = () => { throw new Error('Error generating key') }
     secp256k1 = require('../src')(keysPBM, randomBytes, crypto)
   })
 
@@ -127,7 +124,7 @@ describe('handles generation of invalid key', () => {
 
   before(() => {
     generateKey = crypto.generateKey
-    crypto.generateKey = async () => Buffer.from('not a real key')
+    crypto.generateKey = () => Buffer.from('not a real key')
     secp256k1 = require('../src')(keysPBM, randomBytes, crypto)
   })
 

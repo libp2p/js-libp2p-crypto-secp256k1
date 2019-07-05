@@ -12,7 +12,7 @@ module.exports = (keysProtobuf, randomBytes, crypto) => {
       this._key = key
     }
 
-    async verify (data, sig) {
+    verify (data, sig) {
       return crypto.hashAndVerify(this._key, sig, data)
     }
 
@@ -31,13 +31,8 @@ module.exports = (keysProtobuf, randomBytes, crypto) => {
       return this.bytes.equals(key.bytes)
     }
 
-    async hash () {
-      return new Promise((resolve, reject) => {
-        multihashing(this.bytes, 'sha2-256', (err, res) => {
-          if (err) return reject(err)
-          resolve(res)
-        })
-      })
+    hash () {
+      return multihashing(this.bytes, 'sha2-256')
     }
   }
 
@@ -49,7 +44,7 @@ module.exports = (keysProtobuf, randomBytes, crypto) => {
       crypto.validatePublicKey(this._publicKey)
     }
 
-    async sign (message) {
+    sign (message) {
       return crypto.hashAndSign(this._key, message)
     }
 
@@ -72,13 +67,8 @@ module.exports = (keysProtobuf, randomBytes, crypto) => {
       return this.bytes.equals(key.bytes)
     }
 
-    async hash () {
-      return new Promise((resolve, reject) => {
-        multihashing(this.bytes, 'sha2-256', (err, res) => {
-          if (err) return reject(err)
-          resolve(res)
-        })
-      })
+    hash () {
+      return multihashing(this.bytes, 'sha2-256')
     }
 
     /**
@@ -91,17 +81,14 @@ module.exports = (keysProtobuf, randomBytes, crypto) => {
      * @param {function(Error, id)} callback
      * @returns {undefined}
      */
-    id (callback) {
-      this.public.hash((err, hash) => {
-        if (err) {
-          return callback(err)
-        }
-        callback(null, bs58.encode(hash))
-      })
+    async id () {
+      const hash = await this.public.hash()
+
+      return bs58.encode(hash)
     }
   }
 
-  async function unmarshalSecp256k1PrivateKey (bytes) {
+  function unmarshalSecp256k1PrivateKey (bytes) {
     return new Secp256k1PrivateKey(bytes)
   }
 
