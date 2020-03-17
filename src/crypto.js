@@ -28,7 +28,6 @@ module.exports = (randomBytes) => {
     let privateKey
     do {
       privateKey = randomBytes(32)
-      // privateKey = Buffer.from('5dcc0a2b95576faab565aaa12ee5150b56269c10f6ade521b03f51664e40383a', 'hex')
     } while (!secp256k1.privateKeyVerify(privateKey))
     return privateKey
   }
