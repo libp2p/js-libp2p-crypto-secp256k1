@@ -1,3 +1,6 @@
+⛔️ DEPRECATED: js-libp2p-crypto-secp256k1 is now included in [libp2p-crypto](https://github.com/libp2p/js-libp2p-crypto)
+======
+
 # js-libp2p-crypto-secp256k1
 
 [![](https://img.shields.io/badge/made%20by-Protocol%20Labs-blue.svg?style=flat-square)](http://protocol.ai)
